@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "langchain-self-rag-learning"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.10.12"
+chromadb = "^0.4.22"
+langchain = "^0.1.4"
+langchain-openai = "^0.0.5"
+langgraph = "^0.0.24"
+langchainhub = "^0.1.14"
+
+[tool.poetry.dev-dependencies]
+bs4 = "^0.0.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
