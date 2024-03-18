@@ -12,6 +12,9 @@ langchain = "^0.1.4"
 langchain-openai = "^0.0.5"
 langgraph = "^0.0.24"
 langchainhub = "^0.1.14"
+pygraphviz = "^1.12"
+grandalf = "^0.8"
+ipython = "^8.22.2"
 
 [tool.poetry.dev-dependencies]
 bs4 = "^0.0.2"

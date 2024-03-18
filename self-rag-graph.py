@@ -75,28 +75,56 @@ workflow.add_conditional_edges(
 # used as you would any other runnable.
 app = workflow.compile()
 
+# Note: The ascii graph doesn't draw the right graph, and the PNG fails on the function
+# draw_png() saying the function doesn't exist.
+# Uncomment the blow block to try drawing the graph.
+# Taken from https://github.com/langchain-ai/langgraph/blob/main/examples/visualization.ipynb
 
+# # Draw the graph
+# # Ascii art drawing
+# # $ poetry add grandalf
+# app.get_graph().print_ascii()
+# # PNG drawing
+# # $ brew install graphviz
+# # On mac: 
+# #    $ export CFLAGS="-I $(brew --prefix graphviz)/include"
+# #    $ export LDFLAGS="-L $(brew --prefix graphviz)/lib"
+# # $ poetry add pygraphviz
+# # $ poetry add ipython
+# from IPython.display import Image
+# Image(app.get_graph().draw_png())
 
 # We can now use it! This now exposes the same interface as all other LangChain
 # runnables. This runnable accepts a list of messages.
 
-from langchain_core.messages import HumanMessage
+# Another way to format the input. In Example 1 and 2 we don't use this format, but
+# it's another way to format the input.
+# from langchain_core.messages import HumanMessage
+# inputs = {"messages": [HumanMessage(content="Explain how the different types of agent memory work?")]}
 
 # Example 1 - Full invoke
-# inputs = {"messages": [HumanMessage(content="Explain how the different types of agent memory work?")]}
+print('\nExample 1 - Full Invoke\n')
+inputs = {"keys": {"question": "Explain how the different types of agent memory work?"}}
 # the above was taken from a tutorial, I think it needs to change the key to "question" to work?
-# app.invoke(inputs)
+output_1 = app.invoke(inputs)
+# Output example 1
+pprint.pprint(output_1['keys']['generation'])
+
 
 # Example 2 - Stream node results as they happen
+print('\nExample 2 - Stream Node Results\n')
+# Note: The output from the invoke and stream seem the same. What's happening is you can
+# access it at each node. Allowing for any changes or modifications to be made along the
+# way.
+
 inputs = {"keys": {"question": "Explain how the different types of agent memory work?"}}
 for output in app.stream(inputs):
     # stream() yields dictionaries with output keyed by node name
     for key, value in output.items():
         # Node
-        pprint.pprint(f"Output from node '{key}':")
+        print(f"Output from node '{key}':")
         # Optional: print full state at each node
         # pprint.pprint(value["keys"], indent=2, width=80, depth=None)
-    pprint.pprint("\n---\n")
 
-# Final generation
+# Output example 2
 pprint.pprint(value["keys"]["generation"])
