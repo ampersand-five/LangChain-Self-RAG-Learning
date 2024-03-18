@@ -8,63 +8,62 @@ from state import GraphState
 
 workflow = StateGraph(GraphState)
 
-# Define the node names which are key:value pairs of the node name and which function to
-# call when the node is reached.
-workflow.add_node("retrieve", nodes.retrieve)  # retrieve
-workflow.add_node("grade_documents", nodes.grade_documents)  # grade documents
-workflow.add_node("generate", nodes.generate)  # generate
-workflow.add_node("transform_query", nodes.transform_query)  # transform_query
-workflow.add_node("prepare_for_final_grade", nodes.prepare_for_final_grade)  # passthrough
+# Function to add a node, the arguments are the name of the node and the function to
+# call when this node is reached.
+workflow.add_node(key="retrieve", action=nodes.retrieve)  # retrieve
+workflow.add_node(key="grade_documents", action=nodes.grade_documents)  # grade documents
+workflow.add_node(key="generate", action=nodes.generate)  # generate
+workflow.add_node(key="transform_query", action=nodes.transform_query)  # transform_query
+workflow.add_node(key="prepare_for_final_grade", action=nodes.prepare_for_final_grade)  # passthrough
 
 # Build graph
 
 # Adding node, this is the entry point of the graph
-workflow.set_entry_point("retrieve")
+workflow.set_entry_point(key="retrieve")
 
-# Add another node. The function is 'edge', but it's better called a node. Nodes have
-# only one output path. Edges, aka conditional edges, have multiple output paths and the
-# point of the conditional edge is to decide which path to take.
-workflow.add_edge(
-  # First we list the previous node that led to this node.
-  "retrieve",
-  # Next, we name the node that is called next.
-  "grade_documents")
+# Creates an edge from one node to the next. This means that output of the first node
+# will be passed to the next node. It takes two arguments.
+# - start_key: A string representing the name of the start node. This key must have
+# already been registered in the graph.
+# - end_key: A string representing the name of the end node. This key must have already
+# been registered in the graph.
+workflow.add_edge(start_key="retrieve", end_key="grade_documents")
 
-# Add an edge. Aka a conditional edge. This is a decision point to decide which path to
-# take.
+# This method adds conditional edges. What this means is that only one of the downstream
+# edges will be taken, and which one that is depends on the results of the start node.
+# This takes three arguments:
+# - start_key: A string representing the name of the start node. This key must have
+# already been registered in the graph.
+# - condition: A function to call to decide what to do next. The input will be the
+# output of the start node. It should return a string that is present in
+# 'conditional_edge_mapping' and represents the edge to take.
+# - conditional_edge_mapping: A mapping of string to string. The keys should be strings
+# that may be returned by condition. The values should be the downstream node to call if
+# that condition is returned.
 workflow.add_conditional_edges(
-  # First we define previous node that led to this one. This means, these are all the
-  # edges taken after the node we list here. 'grade_documents' is the listed node in this
-  # case. There is both a plural and singular form of this function.
-  "grade_documents",
-  # Next, we pass in the function that will determine which node/edge is called next.
-  edges.decide_to_generate,
-  # Finally we pass in a mapping.
-  # What will happen is we will call `edges.decide_to_generate`, and then the output of
-  # that will be matched against the keys in this mapping. Based on which one it
-  # matches, that node will then be called. The keys are strings, and the values are the
-  # names of which node to go to when the listed key is matched.
-  {
+  start_key="grade_documents",
+  condition=edges.decide_to_generate,
+  conditional_edge_mapping={
       "transform_query": "transform_query",
       "generate": "generate",
   }
 )
 
-workflow.add_edge("transform_query", "retrieve")
+workflow.add_edge(start_key="transform_query", end_key="retrieve")
 
 workflow.add_conditional_edges(
-    "generate",
-    edges.grade_generation_v_documents,
-    {
+    start_key="generate",
+    condition=edges.grade_generation_v_documents,
+    conditional_edge_mapping={
         "supported": "prepare_for_final_grade",
         "not supported": "generate",
     }
 )
 
 workflow.add_conditional_edges(
-    "prepare_for_final_grade",
-    edges.grade_generation_v_question,
-    {
+    start_key="prepare_for_final_grade",
+    condition=edges.grade_generation_v_question,
+    conditional_edge_mapping={
         # END is a special node marking that the graph should finish.
         "useful": END,
         "not useful": "transform_query",
@@ -105,7 +104,6 @@ app = workflow.compile()
 # Example 1 - Full invoke
 print('\nExample 1 - Full Invoke\n')
 inputs = {"keys": {"question": "Explain how the different types of agent memory work?"}}
-# the above was taken from a tutorial, I think it needs to change the key to "question" to work?
 output_1 = app.invoke(inputs)
 # Output example 1
 pprint.pprint(output_1['keys']['generation'])
