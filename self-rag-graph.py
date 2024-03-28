@@ -31,13 +31,13 @@ workflow.add_edge(start_key="retrieve", end_key="grade_documents")
 
 # This method adds conditional edges. What this means is that only one of the downstream
 # edges will be taken, and which one that is depends on the results of the start node.
-# This takes three arguments:
+# This takes two required arguments and one optional argument:
 # - start_key: A string representing the name of the start node. This key must have
 # already been registered in the graph.
 # - condition: A function to call to decide what to do next. The input will be the
 # output of the start node. It should return a string that is present in
 # 'conditional_edge_mapping' and represents the edge to take.
-# - conditional_edge_mapping: A mapping of string to string. The keys should be strings
+# - (optional) conditional_edge_mapping: A mapping of string to string. The keys should be strings
 # that may be returned by condition. The values should be the downstream node to call if
 # that condition is returned.
 workflow.add_conditional_edges(
