@@ -8,6 +8,8 @@ from state import GraphState
 
 workflow = StateGraph(GraphState)
 
+# Build graph
+
 # Function to add a node, the arguments are the name of the node and the function to
 # call when this node is reached.
 workflow.add_node(key="retrieve", action=nodes.retrieve)  # retrieve
@@ -15,8 +17,6 @@ workflow.add_node(key="grade_documents", action=nodes.grade_documents)  # grade 
 workflow.add_node(key="generate", action=nodes.generate)  # generate
 workflow.add_node(key="transform_query", action=nodes.transform_query)  # transform_query
 workflow.add_node(key="prepare_for_final_grade", action=nodes.prepare_for_final_grade)  # passthrough
-
-# Build graph
 
 # Adding node, this is the entry point of the graph
 workflow.set_entry_point(key="retrieve")
